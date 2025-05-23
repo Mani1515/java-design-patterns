@@ -1,17 +1,28 @@
 version: 2.1
 
-jobs:
-  build:
+executors:
+  maven-executor:
     docker:
-      - image: cimg/openjdk:17.0  # Official CircleCI OpenJDK 17 image
-    working_directory: ~/repo/hello-world  # Set your working directory to hello-world
+      - image: cimg/openjdk:17.0
+    working_directory: ~/repo
+
+jobs:
+  build-and-test:
+    executor: maven-executor
     steps:
-      - checkout  # Checkout your code
+      - checkout
+      - run:
+          name: Restore Maven Cache
+          command: |
+            mkdir -p ~/.m2
       - run:
           name: Build with Maven
-          command: mvn clean package -X  # Run your Maven build with debug output
+          command: mvn clean install
+      - run:
+          name: Run Tests
+          command: mvn test
 
 workflows:
-  build-and-test:
+  maven-build:
     jobs:
-      - build
+      - build-and-test
